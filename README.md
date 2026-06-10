@@ -94,6 +94,28 @@ choreographed spacing depends on uniform passengers; coarser grouping has slack 
 Full discussion in [`docs/results-heterogeneous.md`](docs/results-heterogeneous.md); design in
 [`docs/heterogeneous-profiles-design.md`](docs/heterogeneous-profiles-design.md).
 
+## Travel groups (boarding-order cohesion)
+
+The other half of Steffen's real-world problem: travel parties board **together** and can't be slotted
+into his perfect window→middle→aisle sequence. The `groupsweep` tool seats a fraction of passengers in
+groups of 2–3 that board cohesively (window-first) and sweeps that fraction from 0 to 0.8:
+
+```bash
+python -m boarding.groupsweep --seeds 20 --rows 30 --out study-output
+```
+
+**Steffen-Perfect is the only method that gets *slower* as groups grow** (371 → 389 s) — clumping a
+bench's passengers destroys the spacing its parallelization depends on. **Steffen-Modified is
+group-immune** (it already boards benches together) and **overtakes Steffen-Perfect at ~50% groups**.
+Across both realism axes (heterogeneous passengers *and* groups), the theoretical optimum is the
+fragile one and the practical variant survives — a simulated account of why airlines don't use the
+"perfect" method.
+
+![Boarding time vs group fraction](docs/study-output/group_erosion.png)
+
+Full discussion in [`docs/results-groups.md`](docs/results-groups.md); design in
+[`docs/groups-design.md`](docs/groups-design.md).
+
 ## Visualize
 
 One SQLite trajectory per method (seed 1, full 30-row cabin) is committed under
