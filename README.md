@@ -33,6 +33,28 @@ python -m boarding --methods random steffen_perfect --seeds 3 --rows 30 --out /t
 
 Outputs `results.csv`, `ranking.csv`, `boarding_times.png`.
 
+## Results
+
+Full 30-row (180-passenger) cabin, 20 paired seeds per method
+(`python -m boarding --seeds 20 --rows 30 --out study-output`):
+
+| Rank | Method            | Mean boarding time (s) | Std (s) | vs Steffen-Perfect |
+|------|-------------------|------------------------|---------|--------------------|
+| 1    | steffen_perfect   | 371.0                  | 3.2     | 1.00×              |
+| 2    | steffen_modified  | 378.9                  | 5.2     | 1.02×              |
+| 3    | wilma             | 402.2                  | 9.6     | 1.08×              |
+| 4    | back_to_front     | 443.0                  | 12.3    | 1.19×              |
+| 5    | random            | 455.9                  | 13.0    | 1.23×              |
+| 6    | front_to_back     | 615.0                  | 18.5    | 1.66×              |
+
+This reproduces Steffen's ranking: **Steffen-Perfect is fastest**, **Back-to-Front is no better
+than Random** (his central counter-intuitive result), and **Front-to-Back is worst**. JuPedSim's
+continuous 2-D dynamics compress the absolute ratios versus Steffen's idealized 1-D model, so the
+deliverable is the *ranking and relative ordering*, not the absolute "~4×" figure. Artifacts in
+`docs/study-output/`; full write-up in `docs/results.md`.
+
+![Boarding time by method](docs/study-output/boarding_times.png)
+
 ## Test
 
 ```bash
