@@ -8,11 +8,20 @@
 ## What changed vs the baseline
 
 The baseline study treats all 180 passengers identically (uniform walk speed, one luggage
-distribution, no mobility difference). This run assigns each seat's occupant a **profile** drawn
-from a realistic mix — standard 45%, fast/young 15%, heavy-luggage 15%, elderly 15%, family-with-kids
-10% — which modulates walk speed, luggage-stow time, and how slowly they shuffle past seated
-neighbours. Profiles are seed-paired across methods, so the only thing that differs between methods
-is still the boarding order. See the design spec for the exact multipliers.
+distribution, no mobility difference). This run instead assigns each seat's occupant a **profile**
+drawn from the realistic mix below, which modulates walk speed (× `v0`), luggage-stow time, and how
+slowly they shuffle past seated neighbours (× the seat-interference penalty):
+
+| Profile          | Share | Walk speed × | Stow mean (s) | Stow sd (s) | Mobility × | Who |
+|------------------|-------|--------------|---------------|-------------|------------|-----|
+| standard         | 45%   | 1.00         | 7             | 3           | 1.0        | typical adult, one bag |
+| business_young   | 15%   | 1.15         | 2             | 1           | 0.9        | fast, little/no bag |
+| heavy_luggage    | 15%   | 0.95         | 14            | 5           | 1.2        | two bags, slow stow |
+| elderly          | 15%   | 0.60         | 10            | 4           | 1.8        | slow walk, slow shuffle |
+| family_with_kids | 10%   | 0.70         | 16            | 6           | 2.0        | kids + multiple bags, slowest |
+
+(Values from `DEFAULT_MIX` in `src/boarding/profiles.py`.) Profiles are seed-paired across methods,
+so the only thing that differs between methods is still the boarding order.
 
 ## Ranking under the realistic mix (20 seeds)
 
