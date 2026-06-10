@@ -79,8 +79,20 @@ python -m boarding --mix --seeds 20 --rows 30 --out study-output
 Under a realistic mix, **Steffen-Modified overtakes Steffen-Perfect** as the fastest method, and
 Steffen-Perfect is the *most* heterogeneity-sensitive optimized method (+8.8% vs +3.4%). Its tightly
 choreographed spacing depends on uniform passengers; coarser grouping has slack to absorb slow ones.
-Full table and discussion in [`docs/results-heterogeneous.md`](docs/results-heterogeneous.md); design
-in [`docs/heterogeneous-profiles-design.md`](docs/heterogeneous-profiles-design.md).
+
+| Rank | Method | Mean (s) | vs homogeneous |
+|------|--------|----------|----------------|
+| 1 | steffen_modified | 391.9 | +3.4% |
+| 2 | steffen_perfect | 403.6 | +8.8% |
+| 3 | wilma | 449.6 | +11.8% |
+| 4 | back_to_front | 490.8 | +10.8% |
+| 5 | random | 511.3 | +12.2% |
+| 6 | front_to_back | 688.6 | +12.0% |
+
+![Boarding time under a realistic passenger mix](docs/study-output/boarding_times_mix.png)
+
+Full discussion in [`docs/results-heterogeneous.md`](docs/results-heterogeneous.md); design in
+[`docs/heterogeneous-profiles-design.md`](docs/heterogeneous-profiles-design.md).
 
 ## Visualize
 
