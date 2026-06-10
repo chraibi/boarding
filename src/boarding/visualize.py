@@ -84,14 +84,26 @@ def build_comparison_video(
         ax.set_ylim(*ylim)
         ax.set_xticks([])
         ax.set_yticks([])
-        title = ax.set_title("", color="#e6e8f0", fontsize=11, loc="left", pad=4)
+        title = ax.set_title(
+            "", color="white", fontsize=12, fontweight="bold", loc="left", pad=5
+        )
         for spine in ax.spines.values():
             spine.set_color("#2a2f45")
         artists[method] = (filled, aisle, title)
 
     fig.suptitle("Airplane boarding — method comparison (seats fill as passengers sit)",
-                 color="#e6e8f0", fontsize=13)
+                 color="white", fontsize=14, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.96))
+
+    # horizontal divider line between each pair of method panels
+    from matplotlib.lines import Line2D
+
+    for top_ax, bot_ax in zip(axes[:-1], axes[1:], strict=True):
+        y = (top_ax.get_position().y0 + bot_ax.get_position().y1) / 2.0
+        fig.add_artist(
+            Line2D([0.02, 0.98], [y, y], transform=fig.transFigure,
+                   color="#6b7394", linewidth=1.0)
+        )
 
     def frame(i):
         updated = []
