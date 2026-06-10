@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .profiles import Profile
 
 
 @dataclass(frozen=True)
@@ -39,6 +43,8 @@ class BoardingConfig:
     arrival_threshold: float = 0.45  # m, "reached row" distance
     spawn_headway: float = 2.0     # s between consecutive boardings at the door
     max_sim_seconds: float = 3600.0
+    # heterogeneity: None = homogeneous (baseline); a tuple of Profile enables a mix
+    profile_mix: "tuple[Profile, ...] | None" = None
 
     @property
     def total_passengers(self) -> int:

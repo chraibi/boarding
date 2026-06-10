@@ -18,3 +18,15 @@ def test_seat_inboard_cols_window_has_two():
 def test_seat_is_hashable_and_value_equal():
     assert Seat(1, "R", 0) == Seat(1, "R", 0)
     assert len({Seat(1, "R", 0), Seat(1, "R", 0)}) == 1
+
+
+def test_profile_mix_defaults_to_none():
+    from boarding.config import BoardingConfig
+    assert BoardingConfig().profile_mix is None
+
+
+def test_profile_mix_can_be_set():
+    from boarding.config import BoardingConfig
+    from boarding.profiles import DEFAULT_MIX
+    cfg = BoardingConfig(profile_mix=DEFAULT_MIX)
+    assert cfg.profile_mix is DEFAULT_MIX
