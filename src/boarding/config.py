@@ -45,6 +45,8 @@ class BoardingConfig:
     max_sim_seconds: float = 3600.0
     # heterogeneity: None = homogeneous (baseline); a tuple of Profile enables a mix
     profile_mix: "tuple[Profile, ...] | None" = None
+    # travel groups: 0.0 = no groups (baseline); fraction of passengers boarding cohesively
+    group_fraction: float = 0.0
 
     @property
     def total_passengers(self) -> int:

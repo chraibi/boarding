@@ -30,3 +30,13 @@ def test_profile_mix_can_be_set():
     from boarding.profiles import DEFAULT_MIX
     cfg = BoardingConfig(profile_mix=DEFAULT_MIX)
     assert cfg.profile_mix is DEFAULT_MIX
+
+
+def test_group_fraction_defaults_to_zero():
+    from boarding.config import BoardingConfig
+    assert BoardingConfig().group_fraction == 0.0
+
+
+def test_group_fraction_can_be_set():
+    from boarding.config import BoardingConfig
+    assert BoardingConfig(group_fraction=0.5).group_fraction == 0.5
