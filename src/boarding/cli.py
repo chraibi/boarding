@@ -2,7 +2,7 @@ import argparse
 import shutil
 from pathlib import Path
 
-from .analysis import boxplot_by_method, ranking_table
+from .analysis import CANONICAL_ORDER, COMPARISON_YLIM, boxplot_by_method, ranking_table
 from .config import BoardingConfig
 from .experiment import run_boarding, sweep
 from .methods import METHODS
@@ -53,7 +53,10 @@ def main(argv: list[str] | None = None) -> None:
     df.to_csv(args.out / f"results{suffix}.csv", index=False)
     table = ranking_table(df)
     table.to_csv(args.out / f"ranking{suffix}.csv", index=False)
-    boxplot_by_method(df, args.out / f"boarding_times{suffix}.png")
+    boxplot_by_method(
+        df, args.out / f"boarding_times{suffix}.png",
+        order=CANONICAL_ORDER, ylim=COMPARISON_YLIM,
+    )
     print(table.to_string(index=False))
     if args.trajectories is not None:
         _save_trajectories(args.methods, args.trajectories, cfg, args.out)

@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from .analysis import CANONICAL_ORDER, COMPARISON_YLIM
 from .config import BoardingConfig
 from .experiment import run_boarding
 from .methods import METHODS
@@ -42,13 +43,15 @@ def erosion_plot(df: pd.DataFrame, out_path: Path) -> Path:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    methods = [m for m in METHODS if m in set(df["method"])]
+    present = set(df["method"])
+    methods = [m for m in CANONICAL_ORDER if m in present]
     fig, ax = plt.subplots(figsize=(9, 6))
     for method in methods:
         sub = df[df["method"] == method].groupby("group_fraction")["total_time"].mean()
         ax.plot(sub.index, sub.to_numpy(), marker="o", label=method)
     ax.set_xlabel("group fraction")
     ax.set_ylabel("mean boarding time (s)")
+    ax.set_ylim(*COMPARISON_YLIM)
     ax.set_title("Boarding time vs group fraction (window-first cohesion)")
     ax.legend()
     fig.tight_layout()
