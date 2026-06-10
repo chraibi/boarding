@@ -87,8 +87,8 @@ def test_homogeneous_baseline_is_pinned():
     # homogeneous baseline. These deterministic values predate the profile_mix work;
     # if a future change moves them, the baseline (and the published study) drifted.
     cfg = _tiny()
-    assert run_boarding("random", seed=0, config=cfg).total_time == 82.5
-    assert run_boarding("front_to_back", seed=0, config=cfg).total_time == 99.3
+    assert run_boarding("random", seed=0, config=cfg).total_time == pytest.approx(82.5)
+    assert run_boarding("front_to_back", seed=0, config=cfg).total_time == pytest.approx(99.3)
 
 
 def test_all_slow_mix_boards_slower_than_all_fast_mix():
