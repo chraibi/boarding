@@ -10,6 +10,7 @@ import pandas as pd
 from .choreography import AgentPlan, State, luggage_time, seat_interference_penalty
 from .config import BoardingConfig, Seat
 from .geometry import build_fuselage
+from .groups import assign_groups, cohesive_order
 from .methods import METHODS, all_seats
 from .profiles import PassengerParams, draw_passengers
 
@@ -72,6 +73,8 @@ def run_boarding(
     cfg = config or BoardingConfig()
     walkable, seat_map, door = build_fuselage(cfg)
     order = METHODS[method](cfg, random.Random(seed))
+    if cfg.group_fraction > 0:
+        order = cohesive_order(order, assign_groups(cfg, seed, cfg.group_fraction))
     mix = cfg.profile_mix
     luggage = draw_luggage(cfg, seed) if mix is None else None
     pax: dict[Seat, PassengerParams] | None = (

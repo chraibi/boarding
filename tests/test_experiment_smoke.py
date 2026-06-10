@@ -105,3 +105,18 @@ def test_realistic_mix_run_completes():
                          profile_mix=DEFAULT_MIX)
     result = run_boarding("steffen_perfect", seed=1, config=cfg)
     assert result.seated_count == cfg.total_passengers
+
+
+def test_groups_do_not_change_the_baseline_at_zero_fraction():
+    cfg = _tiny()
+    assert cfg.group_fraction == 0.0
+    assert run_boarding("random", seed=0, config=cfg).total_time == pytest.approx(82.5)
+    assert run_boarding("front_to_back", seed=0, config=cfg).total_time == pytest.approx(99.3)
+
+
+def test_groups_complete_and_slow_steffen_perfect():
+    base = BoardingConfig(rows=4, spawn_headway=1.0)
+    grouped = replace(base, group_fraction=0.8)
+    r = run_boarding("steffen_perfect", seed=0, config=grouped)
+    assert r.seated_count == grouped.total_passengers
+    assert r.total_time >= run_boarding("steffen_perfect", seed=0, config=base).total_time
