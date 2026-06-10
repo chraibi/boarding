@@ -11,6 +11,7 @@ from .choreography import AgentPlan, State, luggage_time, seat_interference_pena
 from .config import BoardingConfig, Seat
 from .geometry import build_fuselage
 from .methods import METHODS, all_seats
+from .profiles import PassengerParams, draw_passengers
 
 
 @dataclass
@@ -71,7 +72,11 @@ def run_boarding(
     cfg = config or BoardingConfig()
     walkable, seat_map, door = build_fuselage(cfg)
     order = METHODS[method](cfg, random.Random(seed))
-    luggage = draw_luggage(cfg, seed)  # paired across methods, independent of order
+    mix = cfg.profile_mix
+    luggage = draw_luggage(cfg, seed) if mix is None else None
+    pax: dict[Seat, PassengerParams] | None = (
+        None if mix is None else draw_passengers(cfg, seed, mix)
+    )
 
     out_path = Path(tempfile.mkdtemp(prefix="boarding_")) / f"{method}_{seed}.sqlite"
     sim, writer = _build_simulation(cfg, walkable, out_path)
@@ -96,8 +101,15 @@ def run_boarding(
     while len(seat_times) < cfg.total_passengers and iteration < max_iter:
         if queue and iteration >= next_spawn and _door_is_clear(sim, plans, door, clearance):
             seat = queue[0]
+            if pax is None:
+                agent_params = params
+            else:
+                agent_params = jps.CollisionFreeSpeedModelAgentParameters(
+                    position=door, desired_speed=cfg.v0 * pax[seat].speed_factor,
+                    radius=cfg.agent_radius, journey_id=journey, stage_id=direct,
+                )
             try:
-                agent_id = sim.add_agent(params)
+                agent_id = sim.add_agent(agent_params)
             except Exception:
                 agent_id = None
             if agent_id is not None:
@@ -111,7 +123,12 @@ def run_boarding(
             agent = sim.agent(agent_id)
             if plan.step(agent, iteration, cfg.arrival_threshold):
                 # arrived at the row: compute the hold from live occupancy and start it
-                hold_s = luggage[plan.seat] + seat_interference_penalty(
+                if pax is None:
+                    stow, mob = luggage[plan.seat], 1.0
+                else:
+                    stow = pax[plan.seat].stow_time
+                    mob = pax[plan.seat].mobility_factor
+                hold_s = stow + mob * seat_interference_penalty(
                     plan.seat, occupied, cfg
                 )
                 plan.start_hold(iteration, round(hold_s / cfg.dt))

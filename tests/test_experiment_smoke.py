@@ -10,6 +10,7 @@ from boarding.experiment import (
     run_boarding,
     sweep,
 )
+from boarding.profiles import DEFAULT_MIX, Profile
 
 
 def _tiny():
@@ -71,3 +72,27 @@ def test_seat_interference_penalty_lengthens_boarding_end_to_end():
         run_boarding("random", seed=2, config=high).total_time
         > run_boarding("random", seed=2, config=base).total_time
     )
+
+
+def test_homogeneous_default_is_unchanged_by_the_feature():
+    cfg = _tiny()
+    assert cfg.profile_mix is None
+    a = run_boarding("random", seed=0, config=cfg).total_time
+    b = run_boarding("random", seed=0, config=cfg).total_time
+    assert a == b
+
+
+def test_all_slow_mix_boards_slower_than_all_fast_mix():
+    fast = (Profile("fast", 1.0, 1.4, 2.0, 1.0, 0.5),)
+    slow = (Profile("slow", 1.0, 0.5, 18.0, 1.0, 2.5),)
+    base = BoardingConfig(rows=4, spawn_headway=1.0)
+    t_fast = run_boarding("random", 0, replace(base, profile_mix=fast)).total_time
+    t_slow = run_boarding("random", 0, replace(base, profile_mix=slow)).total_time
+    assert t_slow > t_fast
+
+
+def test_realistic_mix_run_completes():
+    cfg = BoardingConfig(rows=3, spawn_headway=1.0, max_sim_seconds=1200.0,
+                         profile_mix=DEFAULT_MIX)
+    result = run_boarding("steffen_perfect", seed=1, config=cfg)
+    assert result.seated_count == cfg.total_passengers
