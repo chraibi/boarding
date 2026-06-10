@@ -17,3 +17,8 @@ def test_cli_rejects_unknown_method():
 def test_cli_trajectories_defaults_off_and_parses_seed():
     assert build_parser().parse_args([]).trajectories is None
     assert build_parser().parse_args(["--trajectories", "7"]).trajectories == 7
+
+
+def test_cli_mix_flag_defaults_off():
+    assert build_parser().parse_args([]).mix is False
+    assert build_parser().parse_args(["--mix"]).mix is True

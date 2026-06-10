@@ -6,6 +6,7 @@ from .analysis import boxplot_by_method, ranking_table
 from .config import BoardingConfig
 from .experiment import run_boarding, sweep
 from .methods import METHODS
+from .profiles import DEFAULT_MIX
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -24,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="also save one SQLite trajectory per method at this seed "
         "(under <out>/trajectories/, for jpsvis / the web app)",
     )
+    p.add_argument(
+        "--mix",
+        action="store_true",
+        help="run under the default realistic passenger mix (writes *_mix files)",
+    )
     return p
 
 
@@ -38,13 +44,16 @@ def _save_trajectories(methods, seed: int, cfg: BoardingConfig, out: Path) -> No
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    cfg = BoardingConfig(rows=args.rows)
+    cfg = BoardingConfig(
+        rows=args.rows, profile_mix=DEFAULT_MIX if args.mix else None
+    )
     args.out.mkdir(parents=True, exist_ok=True)
+    suffix = "_mix" if args.mix else ""
     df = sweep(args.methods, seeds=list(range(args.seeds)), config=cfg)
-    df.to_csv(args.out / "results.csv", index=False)
+    df.to_csv(args.out / f"results{suffix}.csv", index=False)
     table = ranking_table(df)
-    table.to_csv(args.out / "ranking.csv", index=False)
-    boxplot_by_method(df, args.out / "boarding_times.png")
+    table.to_csv(args.out / f"ranking{suffix}.csv", index=False)
+    boxplot_by_method(df, args.out / f"boarding_times{suffix}.png")
     print(table.to_string(index=False))
     if args.trajectories is not None:
         _save_trajectories(args.methods, args.trajectories, cfg, args.out)
