@@ -52,6 +52,7 @@ def build_comparison_video(
     out_path: Path,
     fps: int = 20,
     sample_every_s: float = 1.5,
+    scenario: str = "",
 ) -> Path:
     import matplotlib
 
@@ -91,8 +92,10 @@ def build_comparison_video(
             spine.set_color("#2a2f45")
         artists[method] = (filled, aisle, title)
 
-    fig.suptitle("Airplane boarding — method comparison (seats fill as passengers sit)",
-                 color="white", fontsize=14, fontweight="bold")
+    suptitle = "Airplane boarding — method comparison"
+    if scenario:
+        suptitle += f"  ·  {scenario}"
+    fig.suptitle(suptitle, color="white", fontsize=14, fontweight="bold")
     fig.tight_layout(rect=(0, 0, 1, 0.96))
 
     # horizontal divider line between each pair of method panels
@@ -151,8 +154,14 @@ def main(argv=None):
         profile_mix=DEFAULT_MIX if args.mix else None,
         group_fraction=args.group_fraction,
     )
+    if args.mix:
+        scenario = "realistic passenger mix"
+    elif args.group_fraction > 0:
+        scenario = f"{round(args.group_fraction * 100)}% travel groups"
+    else:
+        scenario = "uniform passengers"
     out = build_comparison_video(
-        args.methods, args.seed, cfg, args.out, args.fps, args.sample_every_s
+        args.methods, args.seed, cfg, args.out, args.fps, args.sample_every_s, scenario
     )
     print(f"wrote {out}")
 
