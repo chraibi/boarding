@@ -88,13 +88,14 @@ filling (teal) as passengers sit, aisle passengers in yellow, with a live `seate
 counter and each method's finish time. Watch the Steffen variants pull ahead while
 front-to-back jams. Build it with:
 
+![comparison](docs/study-output/comparison.gif)
+
+Full-quality MP4: [`docs/study-output/comparison.mp4`](docs/study-output/comparison.mp4).
+Build it with (requires `ffmpeg` on PATH):
+
 ```bash
 python -m boarding.visualize --seed 1 --rows 30 --out docs/study-output/comparison.mp4
 ```
-
-(Requires `ffmpeg` on PATH.)
-
-![comparison](docs/study-output/comparison.mp4)
 
 ## Test
 
