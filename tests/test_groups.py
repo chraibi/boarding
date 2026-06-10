@@ -69,3 +69,28 @@ def test_cohesive_order_unchanged_when_all_singletons():
     order = all_seats(cfg)
     groups = {s: i for i, s in enumerate(order)}
     assert cohesive_order(order, groups) == order
+
+
+def test_real_groups_are_contiguous_window_first_in_a_method_order():
+    # end-to-end: a real assign_groups output, reordered against a real method order,
+    # must place each multi-seat group's members consecutively and window-first
+    import random
+
+    from boarding.methods import METHODS
+
+    cfg = BoardingConfig(rows=12)
+    groups = assign_groups(cfg, seed=7, group_fraction=0.7)
+    order = cohesive_order(METHODS["steffen_perfect"](cfg, random.Random(7)), groups)
+    assert set(order) == set(all_seats(cfg)) and len(order) == cfg.total_passengers
+
+    members: dict[int, list[Seat]] = {}
+    for s in order:
+        members.setdefault(groups[s], []).append(s)
+    positions = {s: i for i, s in enumerate(order)}
+    for seats in members.values():
+        if len(seats) < 2:
+            continue
+        idx = sorted(positions[s] for s in seats)
+        assert idx == list(range(idx[0], idx[0] + len(seats)))  # consecutive in final order
+        block = order[idx[0]: idx[0] + len(seats)]
+        assert block == sorted(block, key=lambda s: -s.col)  # window-first
