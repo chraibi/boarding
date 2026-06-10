@@ -14,6 +14,16 @@ row, hold for `luggage + seat-interference` time (blocking followers), then sit 
 reproduces Steffen's *ranking* (Steffen fastest, back-to-front ≈ random, front-to-back worst); see
 `docs/results.md`.
 
+### Is this 1-D?
+
+The **aisle** is effectively 1-D: it is 0.5 m wide, so two 0.36 m-wide agents cannot pass — motion
+is strictly single-file along the cabin's length. That matches Steffen's original 1-D
+cellular-automaton model, and it is why a raw trajectory replay looks like a single bar. The
+simulation itself is JuPedSim's full **2-D continuous** dynamics (collision avoidance, finite body
+size), and the **seats** live at 2-D coordinates off the aisle — they are labels for the
+interference penalty, not navigated. The comparison video (below) shows the 2-D cabin with those
+seats filling over time.
+
 ## Install
 
 ```bash
