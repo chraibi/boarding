@@ -71,6 +71,21 @@ Regenerate them with:
 python -m boarding --seeds 1 --rows 30 --out study-output --trajectories 1
 ```
 
+### Method-comparison video
+
+`docs/study-output/comparison.mp4` shows all six methods at once — one panel each, seats
+filling (teal) as passengers sit, aisle passengers in yellow, with a live `seated N/180`
+counter and each method's finish time. Watch the Steffen variants pull ahead while
+front-to-back jams. Build it with:
+
+```bash
+python -m boarding.visualize --seed 1 --rows 30 --out docs/study-output/comparison.mp4
+```
+
+(Requires `ffmpeg` on PATH.)
+
+![comparison](docs/study-output/comparison.mp4)
+
 ## Test
 
 ```bash

@@ -1,6 +1,6 @@
 import random
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,8 +55,19 @@ def _door_is_clear(sim, plans, door, clearance) -> bool:
 
 
 def run_boarding(
-    method: str, seed: int, config: BoardingConfig | None = None
+    method: str,
+    seed: int,
+    config: BoardingConfig | None = None,
+    on_frame: Callable[[int, list, list], None] | None = None,
 ) -> BoardingResult:
+    """Run one boarding simulation.
+
+    on_frame, if given, is called once per iteration with
+    ``(iteration, aisle_positions, newly_seated_coords)`` where ``aisle_positions`` is
+    the list of (x, y) for agents still in the aisle and ``newly_seated_coords`` is the
+    list of seat (x, y) that filled this iteration. Used by the visualizer; default None
+    leaves behavior unchanged.
+    """
     cfg = config or BoardingConfig()
     walkable, seat_map, door = build_fuselage(cfg)
     order = METHODS[method](cfg, random.Random(seed))
@@ -109,9 +120,14 @@ def run_boarding(
                 seat_times[plan.seat] = iteration * cfg.dt
                 seated_now.append(agent_id)
 
+        newly_seated_coords = [seat_map[plans[a].seat].seat_coord for a in seated_now]
         for agent_id in seated_now:
             sim.mark_agent_for_removal(agent_id)
             del plans[agent_id]
+
+        if on_frame is not None:
+            aisle_positions = [tuple(sim.agent(a).position) for a in plans]
+            on_frame(iteration, aisle_positions, newly_seated_coords)
 
         sim.iterate()
         iteration += 1
