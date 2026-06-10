@@ -64,11 +64,10 @@ def run_boarding(
 ) -> BoardingResult:
     """Run one boarding simulation.
 
-    on_frame, if given, is called once per iteration with
-    ``(iteration, aisle_positions, newly_seated_coords)`` where ``aisle_positions`` is
-    the list of (x, y) for agents still in the aisle and ``newly_seated_coords`` is the
-    list of seat (x, y) that filled this iteration. Used by the visualizer; default None
-    leaves behavior unchanged.
+    on_frame, if given, is called once per iteration with ``(iteration, aisle, newly)``
+    where ``aisle`` is the list of ``(x, y, seat)`` for agents still in the aisle and
+    ``newly`` is the list of ``(x, y, seat)`` that filled this iteration (x, y = the seat
+    coordinate). Used by the visualizer; default None leaves behavior unchanged.
     """
     cfg = config or BoardingConfig()
     walkable, seat_map, door = build_fuselage(cfg)
@@ -140,14 +139,16 @@ def run_boarding(
                 seat_times[plan.seat] = iteration * cfg.dt
                 seated_now.append(agent_id)
 
-        newly_seated_coords = [seat_map[plans[a].seat].seat_coord for a in seated_now]
+        newly_seated = [
+            (*seat_map[plans[a].seat].seat_coord, plans[a].seat) for a in seated_now
+        ]
         for agent_id in seated_now:
             sim.mark_agent_for_removal(agent_id)
             del plans[agent_id]
 
         if on_frame is not None:
-            aisle_positions = [tuple(sim.agent(a).position) for a in plans]
-            on_frame(iteration, aisle_positions, newly_seated_coords)
+            aisle = [(*sim.agent(a).position, plans[a].seat) for a in plans]
+            on_frame(iteration, aisle, newly_seated)
 
         sim.iterate()
         iteration += 1

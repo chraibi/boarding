@@ -15,20 +15,73 @@ from .methods import METHODS
 _EMPTY_XY = [[0, -999]]  # off-screen placeholder for an empty scatter (set_offsets needs Nx2)
 
 _EMPTY = "#3a3f57"   # unoccupied seat outline
-_FILLED = "#4fd1c5"  # seated passenger
-_AISLE = "#f6c453"   # passenger in the aisle
+_FILLED = "#4fd1c5"  # seated passenger (uniform case)
+_AISLE = "#f6c453"   # passenger in the aisle (uniform case)
+
+_SOLO = "#9aa0b5"    # background colour: solo passengers / the common "standard" profile
+_GROUP_PALETTE = ["#e15759", "#4e79a7", "#59a14f", "#f28e2b", "#b07aa1"]  # rotated per group
+_PROFILE_COLORS = {
+    "standard": _SOLO,
+    "business_young": "#4e79a7",
+    "heavy_luggage": "#f28e2b",
+    "elderly": "#e15759",
+    "family_with_kids": "#59a14f",
+}
 
 
-def capture(method: str, seed: int, cfg: BoardingConfig, sample_every_s: float):
-    """Run one method, sampling (time, aisle_xy, filled_seat_xy) every sample_every_s."""
+def _color_map(cfg: BoardingConfig, seed: int):
+    """Return (color_of, legend_items, caption) for the scenario, or (None, None, None)
+    for the uniform case. color_of maps a Seat to a hex colour; legend_items is a list of
+    (label, colour) for a profile legend; caption is a one-line note for the group case."""
+    if cfg.group_fraction > 0:
+        from collections import Counter
+
+        from .groups import assign_groups
+
+        groups = assign_groups(cfg, seed, cfg.group_fraction)
+        sizes = Counter(groups.values())
+        real = sorted(gid for gid, c in sizes.items() if c >= 2)
+        gid_color = {
+            gid: _GROUP_PALETTE[i % len(_GROUP_PALETTE)] for i, gid in enumerate(real)
+        }
+
+        def color_of(seat):
+            return gid_color.get(groups[seat], _SOLO)
+
+        return color_of, None, "each colour = one travelling party  ·  grey = solo"
+
+    if cfg.profile_mix:
+        from .profiles import draw_passengers
+
+        pax = draw_passengers(cfg, seed, cfg.profile_mix)
+
+        def color_of(seat):
+            return _PROFILE_COLORS.get(pax[seat].profile_name, _SOLO)
+
+        legend = [(p.name, _PROFILE_COLORS.get(p.name, _SOLO)) for p in cfg.profile_mix]
+        return color_of, legend, None
+
+    return None, None, None
+
+
+def capture(method, seed, cfg, sample_every_s, color_of=None):
+    """Run one method, sampling (time, aisle, filled) every sample_every_s. Each aisle /
+    filled entry is (x, y, colour); colour comes from color_of(seat) or the uniform default."""
     stride = max(1, round(sample_every_s / cfg.dt))
-    filled: list[tuple[float, float]] = []
+    filled: list[tuple[float, float, str]] = []
     samples: list[tuple[float, list, list]] = []
 
-    def on_frame(iteration, aisle_positions, newly_seated_coords):
-        filled.extend(newly_seated_coords)
+    def aisle_color(seat):
+        return color_of(seat) if color_of else _AISLE
+
+    def seat_color(seat):
+        return color_of(seat) if color_of else _FILLED
+
+    def on_frame(iteration, aisle, newly):
+        filled.extend((x, y, seat_color(seat)) for x, y, seat in newly)
         if iteration % stride == 0:
-            samples.append((iteration * cfg.dt, list(aisle_positions), list(filled)))
+            pts = [(x, y, aisle_color(seat)) for x, y, seat in aisle]
+            samples.append((iteration * cfg.dt, pts, list(filled)))
 
     result = run_boarding(method, seed, config=cfg, on_frame=on_frame)
     samples.append((result.total_time, [], list(filled)))  # final all-seated frame
@@ -60,7 +113,8 @@ def build_comparison_video(
     import matplotlib.pyplot as plt
     from matplotlib import animation
 
-    captures = {m: capture(m, seed, cfg, sample_every_s) for m in methods}
+    color_of, legend_items, caption = _color_map(cfg, seed)
+    captures = {m: capture(m, seed, cfg, sample_every_s, color_of) for m in methods}
     n_frames = max(len(s) for s, _ in captures.values())
     total = cfg.total_passengers
     seat_xy, xlim, ylim = _cabin_extent(cfg)
@@ -96,7 +150,8 @@ def build_comparison_video(
     if scenario:
         suptitle += f"  ·  {scenario}"
     fig.suptitle(suptitle, color="white", fontsize=14, fontweight="bold")
-    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    bottom = 0.05 if (legend_items or caption) else 0.0
+    fig.tight_layout(rect=(0, bottom, 1, 0.96))
 
     # horizontal divider line between each pair of method panels
     from matplotlib.lines import Line2D
@@ -108,17 +163,39 @@ def build_comparison_video(
                    color="#6b7394", linewidth=1.0)
         )
 
+    if legend_items:
+        handles = [
+            Line2D([0], [0], marker="o", linestyle="", markersize=7,
+                   markerfacecolor=c, markeredgecolor="none", label=name)
+            for name, c in legend_items
+        ]
+        fig.legend(handles=handles, loc="lower center", ncol=len(handles),
+                   frameon=False, labelcolor="white", fontsize=9)
+    if caption:
+        fig.text(0.5, 0.012, caption, ha="center", color="#c7ccdb", fontsize=10)
+
+    def _split(pts):
+        if not pts:
+            return _EMPTY_XY, None
+        return [(x, y) for x, y, _ in pts], [c for _, _, c in pts]
+
     def frame(i):
         updated = []
         for method in methods:
             samples, t_total = captures[method]
             s = samples[min(i, len(samples) - 1)]  # finished panels hold last frame
-            t, aisle_xy, filled_xy = s
+            t, aisle_pts, filled_pts = s
             filled_a, aisle_a, title = artists[method]
-            filled_a.set_offsets(filled_xy if filled_xy else _EMPTY_XY)
-            aisle_a.set_offsets(aisle_xy if aisle_xy else _EMPTY_XY)
+            fxy, fc = _split(filled_pts)
+            axy, ac = _split(aisle_pts)
+            filled_a.set_offsets(fxy)
+            if fc:
+                filled_a.set_facecolor(fc)
+            aisle_a.set_offsets(axy)
+            if ac:
+                aisle_a.set_facecolor(ac)
             title.set_text(
-                f"{method}   t={t:5.0f}s   seated {len(filled_xy):>3}/{total}"
+                f"{method}   t={t:5.0f}s   seated {len(filled_pts):>3}/{total}"
                 f"   (finishes {t_total:.0f}s)"
             )
             updated += [filled_a, aisle_a, title]

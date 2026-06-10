@@ -7,11 +7,25 @@
 
 ## What the sweep does
 
-A fraction of the 180 passengers travel in groups of 2–3 seated together in one bench (window/middle/
-aisle of a row-side). Each group boards **cohesively** — its members enter consecutively, **window-first**
-(so they never make each other stand). The `group_fraction` is swept 0 → 0.8; everything else (geometry,
-luggage, homogeneous passengers, 20 paired seeds) is held fixed, so the only thing changing is how much
-the perfect single-file order is clumped by parties boarding together.
+A fraction of the 180 passengers travel in groups seated together in one bench (window/middle/aisle of
+a row-side). Each group boards **cohesively** — its members enter consecutively, **window-first** (so
+they never make each other stand). Everything not in the table below (geometry, luggage, homogeneous
+passengers) is held fixed, so the only thing changing is how much the perfect single-file order is
+clumped by parties boarding together.
+
+| Parameter            | Value |
+|----------------------|-------|
+| `group_fraction` sweep | 0.0, 0.2, 0.4, 0.6, 0.8 |
+| Group sizes (weights)  | 2 (0.5), 3 (0.5) |
+| Group seating          | adjacent window-out seats of one bench (row + side); max size 3 |
+| Within-group board order | window → middle → aisle (no within-group interference) |
+| Cohesion anchor        | the group's earliest position in the method's order |
+| Passengers             | homogeneous (groups studied in isolation from profiles) |
+| Seeds                  | 20 paired (same group structure per seed across methods) |
+| Cabin                  | 30 rows × 6 seats = 180 passengers |
+
+(Values from `assign_groups` / `_GROUP_SIZES` in `src/boarding/groups.py` and the `groupsweep`
+defaults.)
 
 ## Mean boarding time (s) vs group fraction
 
