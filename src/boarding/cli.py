@@ -49,13 +49,14 @@ def main(argv: list[str] | None = None) -> None:
     )
     args.out.mkdir(parents=True, exist_ok=True)
     suffix = "_mix" if args.mix else ""
+    scenario = "Realistic passenger mix" if args.mix else "Homogeneous passengers"
     df = sweep(args.methods, seeds=list(range(args.seeds)), config=cfg)
     df.to_csv(args.out / f"results{suffix}.csv", index=False)
     table = ranking_table(df)
     table.to_csv(args.out / f"ranking{suffix}.csv", index=False)
     boxplot_by_method(
         df, args.out / f"boarding_times{suffix}.png",
-        order=CANONICAL_ORDER, ylim=COMPARISON_YLIM,
+        order=CANONICAL_ORDER, ylim=COMPARISON_YLIM, title=scenario,
     )
     print(table.to_string(index=False))
     if args.trajectories is not None:

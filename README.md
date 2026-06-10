@@ -63,7 +63,7 @@ continuous 2-D dynamics compress the absolute ratios versus Steffen's idealized 
 deliverable is the *ranking and relative ordering*, not the absolute "~4×" figure. Artifacts in
 `docs/study-output/`; full write-up in `docs/results.md`.
 
-![Boarding time by method](docs/study-output/boarding_times.png)
+![Homogeneous passengers](docs/study-output/boarding_times.png)
 
 ## Passenger heterogeneity (time-to-sitting)
 
@@ -115,7 +115,7 @@ Across both realism axes (heterogeneous passengers *and* groups), the theoretica
 fragile one and the practical variant survives — a simulated account of why airlines don't use the
 "perfect" method.
 
-![Boarding time vs group fraction](docs/study-output/group_erosion.png)
+![Window-first group cohesion](docs/study-output/group_erosion.png)
 
 ![grouped comparison](docs/study-output/comparison_groups.gif)
 

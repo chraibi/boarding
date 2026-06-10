@@ -52,7 +52,7 @@ def erosion_plot(df: pd.DataFrame, out_path: Path) -> Path:
     ax.set_xlabel("group fraction")
     ax.set_ylabel("mean boarding time (s)")
     ax.set_ylim(*COMPARISON_YLIM)
-    ax.set_title("Boarding time vs group fraction (window-first cohesion)")
+    ax.set_title("Window-first group cohesion")
     ax.legend()
     fig.tight_layout()
     fig.savefig(out_path, dpi=120)

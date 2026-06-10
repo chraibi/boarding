@@ -33,11 +33,14 @@ def boxplot_by_method(
     out_path: Path,
     order: tuple[str, ...] | list[str] | None = None,
     ylim: tuple[float, float] | None = None,
+    title: str | None = None,
 ) -> Path:
     """Box plot of total boarding time per method; saves a PNG.
 
     order: fixed method order for the x-axis (defaults to fastest-first for this df).
     ylim: fixed y-limits. Pass CANONICAL_ORDER + COMPARISON_YLIM for cross-study plots.
+    title: figure title — pass the scenario name (e.g. "Realistic passenger mix").
+        The compared quantity and methods already live in the y-label and x-ticks.
     """
     import matplotlib
 
@@ -53,7 +56,7 @@ def boxplot_by_method(
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.boxplot(data, tick_labels=seq, orientation="vertical")
     ax.set_ylabel("Boarding time (s)")
-    ax.set_title("Boarding time by method")
+    ax.set_title(title if title is not None else "Boarding time by method")
     ax.tick_params(axis="x", rotation=30)
     if ylim is not None:
         ax.set_ylim(*ylim)
