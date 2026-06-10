@@ -65,6 +65,23 @@ deliverable is the *ranking and relative ordering*, not the absolute "~4×" figu
 
 ![Boarding time by method](docs/study-output/boarding_times.png)
 
+## Passenger heterogeneity (time-to-sitting)
+
+Steffen's perfect method assumes interchangeable passengers in a flawless single-file order — a
+common real-world criticism. The `--mix` flag assigns each passenger a profile (standard, fast/young,
+heavy-luggage, elderly, family-with-kids) that modulates walk speed, stow time, and shuffle speed,
+then re-runs the comparison:
+
+```bash
+python -m boarding --mix --seeds 20 --rows 30 --out study-output
+```
+
+Under a realistic mix, **Steffen-Modified overtakes Steffen-Perfect** as the fastest method, and
+Steffen-Perfect is the *most* heterogeneity-sensitive optimized method (+8.8% vs +3.4%). Its tightly
+choreographed spacing depends on uniform passengers; coarser grouping has slack to absorb slow ones.
+Full table and discussion in [`docs/results-heterogeneous.md`](docs/results-heterogeneous.md); design
+in [`docs/heterogeneous-profiles-design.md`](docs/heterogeneous-profiles-design.md).
+
 ## Visualize
 
 One SQLite trajectory per method (seed 1, full 30-row cabin) is committed under
