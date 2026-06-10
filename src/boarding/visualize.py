@@ -131,6 +131,8 @@ def build_comparison_video(
 def main(argv=None):
     import argparse
 
+    from .profiles import DEFAULT_MIX
+
     p = argparse.ArgumentParser(description="Boarding method-comparison video.")
     p.add_argument("--methods", nargs="+", default=list(METHODS), choices=list(METHODS))
     p.add_argument("--seed", type=int, default=1)
@@ -138,8 +140,17 @@ def main(argv=None):
     p.add_argument("--out", type=Path, default=Path("study-output/comparison.mp4"))
     p.add_argument("--fps", type=int, default=20)
     p.add_argument("--sample-every-s", type=float, default=1.5)
+    p.add_argument("--mix", action="store_true", help="use the realistic passenger mix")
+    p.add_argument(
+        "--group-fraction", type=float, default=0.0,
+        help="fraction of passengers travelling in cohesive groups",
+    )
     args = p.parse_args(argv)
-    cfg = BoardingConfig(rows=args.rows)
+    cfg = BoardingConfig(
+        rows=args.rows,
+        profile_mix=DEFAULT_MIX if args.mix else None,
+        group_fraction=args.group_fraction,
+    )
     out = build_comparison_video(
         args.methods, args.seed, cfg, args.out, args.fps, args.sample_every_s
     )

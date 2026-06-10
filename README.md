@@ -91,6 +91,10 @@ choreographed spacing depends on uniform passengers; coarser grouping has slack 
 
 ![Boarding time under a realistic passenger mix](docs/study-output/boarding_times_mix.png)
 
+![heterogeneous comparison](docs/study-output/comparison_mix.gif)
+
+Full-quality MP4: [`docs/study-output/comparison_mix.mp4`](docs/study-output/comparison_mix.mp4)
+(`python -m boarding.visualize --mix --seed 1 --rows 30 --out docs/study-output/comparison_mix.mp4`).
 Full discussion in [`docs/results-heterogeneous.md`](docs/results-heterogeneous.md); design in
 [`docs/heterogeneous-profiles-design.md`](docs/heterogeneous-profiles-design.md).
 
@@ -113,6 +117,11 @@ fragile one and the practical variant survives — a simulated account of why ai
 
 ![Boarding time vs group fraction](docs/study-output/group_erosion.png)
 
+![grouped comparison](docs/study-output/comparison_groups.gif)
+
+Comparison video at 80% groups — full-quality MP4:
+[`docs/study-output/comparison_groups.mp4`](docs/study-output/comparison_groups.mp4)
+(`python -m boarding.visualize --group-fraction 0.8 --seed 1 --rows 30 --out docs/study-output/comparison_groups.mp4`).
 Full discussion in [`docs/results-groups.md`](docs/results-groups.md); design in
 [`docs/groups-design.md`](docs/groups-design.md).
 
