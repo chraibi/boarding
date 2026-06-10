@@ -1,0 +1,73 @@
+from dataclasses import replace
+
+import pandas as pd
+import pytest
+
+from boarding.config import BoardingConfig
+from boarding.experiment import (
+    BoardingResult,
+    draw_luggage,
+    run_boarding,
+    sweep,
+)
+
+
+def _tiny():
+    return BoardingConfig(rows=3, spawn_headway=1.0, max_sim_seconds=900.0)
+
+
+def test_run_boarding_seats_everyone():
+    cfg = _tiny()
+    result = run_boarding("random", seed=0, config=cfg)
+    assert isinstance(result, BoardingResult)
+    assert result.seated_count == cfg.total_passengers
+    assert result.total_time > 0
+    assert len(result.seat_times) == cfg.total_passengers
+
+
+def test_steffen_not_slower_than_front_to_back_on_one_seed():
+    cfg = _tiny()
+    steffen = run_boarding("steffen_perfect", seed=1, config=cfg).total_time
+    f2b = run_boarding("front_to_back", seed=1, config=cfg).total_time
+    assert steffen <= f2b
+
+
+def test_sweep_returns_long_dataframe():
+    cfg = BoardingConfig(rows=2, spawn_headway=1.0)
+    df = sweep(["random", "steffen_perfect"], seeds=[0, 1], config=cfg)
+    assert isinstance(df, pd.DataFrame)
+    assert set(df.columns) >= {"method", "seed", "total_time"}
+    assert len(df) == 2 * 2  # methods x seeds
+
+
+def test_luggage_is_paired_across_methods_and_seed_dependent():
+    # the same seed gives identical per-seat luggage regardless of boarding method,
+    # and a different seed gives different draws (common-random-number replication)
+    cfg = BoardingConfig(rows=4)
+    assert draw_luggage(cfg, 7) == draw_luggage(cfg, 7)
+    assert draw_luggage(cfg, 7) != draw_luggage(cfg, 8)
+
+
+def test_run_boarding_is_deterministic_for_a_seed():
+    cfg = _tiny()
+    a = run_boarding("random", seed=3, config=cfg).total_time
+    b = run_boarding("random", seed=3, config=cfg).total_time
+    assert a == b
+
+
+def test_incomplete_run_raises_instead_of_corrupting_the_mean():
+    # a too-small time budget must fail loudly, not return a partial result
+    cfg = BoardingConfig(rows=3, spawn_headway=1.0, max_sim_seconds=2.0)
+    with pytest.raises(RuntimeError, match="did not complete"):
+        run_boarding("random", seed=0, config=cfg)
+
+
+def test_seat_interference_penalty_lengthens_boarding_end_to_end():
+    # exercises the live penalty path: quadrupling the per-neighbor penalty must
+    # increase total boarding time for an order that creates seat interference
+    base = BoardingConfig(rows=4, spawn_headway=1.0)
+    high = replace(base, seat_penalty=base.seat_penalty * 4)
+    assert (
+        run_boarding("random", seed=2, config=high).total_time
+        > run_boarding("random", seed=2, config=base).total_time
+    )
