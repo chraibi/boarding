@@ -12,3 +12,8 @@ def test_cli_rejects_unknown_method():
     import pytest
     with pytest.raises(SystemExit):
         build_parser().parse_args(["--methods", "not_a_method"])
+
+
+def test_cli_trajectories_defaults_off_and_parses_seed():
+    assert build_parser().parse_args([]).trajectories is None
+    assert build_parser().parse_args(["--trajectories", "7"]).trajectories == 7

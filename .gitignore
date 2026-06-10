@@ -8,3 +8,5 @@ dist/
 .ruff_cache/
 /study-output/
 *.sqlite
+# but keep the curated trajectories committed for visualization
+!docs/study-output/trajectories/*.sqlite

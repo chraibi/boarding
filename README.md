@@ -55,6 +55,22 @@ deliverable is the *ranking and relative ordering*, not the absolute "~4×" figu
 
 ![Boarding time by method](docs/study-output/boarding_times.png)
 
+## Visualize
+
+One SQLite trajectory per method (seed 1, full 30-row cabin) is committed under
+`docs/study-output/trajectories/` — open any of them in
+[jpsvis](https://www.jupedsim.org/) or the Web-Based-JuPedSim app to watch the aisle
+flow. With logical seating, agents queue and hold in the single-file aisle and leave at
+their row, so the trajectories show the *boarding/queueing dynamics* (not seats filling).
+The contrast is clearest between `steffen_perfect.sqlite` (spread out, fast) and
+`front_to_back.sqlite` (jammed behind front holders, slow).
+
+Regenerate them with:
+
+```bash
+python -m boarding --seeds 1 --rows 30 --out study-output --trajectories 1
+```
+
 ## Test
 
 ```bash
