@@ -45,3 +45,33 @@ def test_partial_compliance_changes_the_order():
     cfg = BoardingConfig(rows=8)
     order = _order("steffen_perfect", cfg)
     assert apply_compliance(order, 0.5, seed=1) != order
+
+
+def test_noncompliant_set_is_method_independent():
+    # the load-bearing paired-replication guarantee: same passengers non-compliant for a
+    # given (seed, rate), regardless of boarding method
+    from boarding.compliance import noncompliant_seats
+
+    cfg = BoardingConfig(rows=8)
+    a = noncompliant_seats(_order("steffen_perfect", cfg), 0.5, seed=4)
+    b = noncompliant_seats(_order("random", cfg), 0.5, seed=4)
+    assert a == b
+    assert len(a) == round(0.5 * cfg.total_passengers)
+
+
+def test_compliant_passengers_keep_their_relative_order():
+    from boarding.compliance import noncompliant_seats
+
+    cfg = BoardingConfig(rows=8)
+    order = _order("steffen_perfect", cfg)
+    out = apply_compliance(order, 0.5, seed=2)
+    nc = noncompliant_seats(order, 0.5, seed=2)
+    in_compliant = [s for s in order if s not in nc]
+    out_compliant = [s for s in out if s not in nc]
+    assert out_compliant == in_compliant  # compliant subsequence order preserved
+
+
+def test_zero_compliance_differs_from_input():
+    cfg = BoardingConfig(rows=5)
+    order = _order("steffen_perfect", cfg)
+    assert apply_compliance(order, 0.0, seed=5) != order
