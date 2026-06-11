@@ -120,3 +120,18 @@ def test_groups_complete_and_slow_steffen_perfect():
     r = run_boarding("steffen_perfect", seed=0, config=grouped)
     assert r.seated_count == grouped.total_passengers
     assert r.total_time >= run_boarding("steffen_perfect", seed=0, config=base).total_time
+
+
+def test_compliance_does_not_change_the_baseline_at_full_compliance():
+    cfg = _tiny()
+    assert cfg.compliance_rate == 1.0
+    assert run_boarding("random", seed=0, config=cfg).total_time == pytest.approx(82.5)
+    assert run_boarding("front_to_back", seed=0, config=cfg).total_time == pytest.approx(99.3)
+
+
+def test_low_compliance_completes_and_slows_steffen_perfect():
+    base = BoardingConfig(rows=4, spawn_headway=1.0)
+    noncompliant = replace(base, compliance_rate=0.3)
+    r = run_boarding("steffen_perfect", seed=0, config=noncompliant)
+    assert r.seated_count == noncompliant.total_passengers
+    assert r.total_time >= run_boarding("steffen_perfect", seed=0, config=base).total_time
