@@ -47,6 +47,9 @@ class BoardingConfig:
     profile_mix: "tuple[Profile, ...] | None" = None
     # travel groups: 0.0 = no groups (baseline); fraction of passengers boarding cohesively
     group_fraction: float = 0.0
+    # passenger compliance: 1.0 = everyone boards in their assigned slot (baseline);
+    # below 1.0, that fraction of passengers is displaced to random positions
+    compliance_rate: float = 1.0
 
     @property
     def total_passengers(self) -> int:

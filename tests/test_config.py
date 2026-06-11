@@ -40,3 +40,13 @@ def test_group_fraction_defaults_to_zero():
 def test_group_fraction_can_be_set():
     from boarding.config import BoardingConfig
     assert BoardingConfig(group_fraction=0.5).group_fraction == 0.5
+
+
+def test_compliance_rate_defaults_to_one():
+    from boarding.config import BoardingConfig
+    assert BoardingConfig().compliance_rate == 1.0
+
+
+def test_compliance_rate_can_be_set():
+    from boarding.config import BoardingConfig
+    assert BoardingConfig(compliance_rate=0.5).compliance_rate == 0.5
