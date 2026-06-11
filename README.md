@@ -125,6 +125,28 @@ Comparison video at 80% groups — full-quality MP4:
 Full discussion in [`docs/results-groups.md`](docs/results-groups.md); design in
 [`docs/groups-design.md`](docs/groups-design.md).
 
+## Passenger compliance (order discipline)
+
+A boarding strategy only helps if passengers actually follow it. The `compliancesweep` tool sweeps a
+**compliance rate** `Rc` (the share who board in their assigned slot); below 100 %, that fraction of
+passengers is displaced to random positions:
+
+```bash
+python -m boarding.compliancesweep --seeds 20 --rows 30 --out study-output
+```
+
+As compliance falls, **the optimized methods degrade toward Random and all six collapse to the *same*
+value at `Rc = 0`** (exactly, since the order becomes method-independent). **Random is flat** and
+**Front-to-Back even improves**. Steffen-Perfect's ~85 s edge over Random at full compliance shrinks to
+~31 s at 50 % and to 0 at zero. This reproduces the trend of **Dong, Yanagisawa & Nishinari (2025),
+Physica A 658, 130298, Fig 16** (a multi-aisle blended-wing-body CA model) on our single-aisle continuous
+model — the value of a clever order is entirely contingent on passengers following it.
+
+![Boarding time vs compliance rate](docs/study-output/compliance_erosion.png)
+
+Full discussion in [`docs/results-compliance.md`](docs/results-compliance.md); design in
+[`docs/compliance-design.md`](docs/compliance-design.md).
+
 ## Visualize
 
 One SQLite trajectory per method (seed 1, full 30-row cabin) is committed under
