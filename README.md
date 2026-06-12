@@ -45,17 +45,17 @@ Outputs `results.csv`, `ranking.csv`, `boarding_times.png`.
 
 ## Results
 
-Full 30-row (180-passenger) cabin, 20 paired seeds per method
+Mean boarding time, 20 paired seeds, 30-row (180-passenger) cabin — the **homogeneous baseline**
 (`python -m boarding --seeds 20 --rows 30 --out study-output`):
 
-| Rank | Method            | Mean boarding time (s) | Std (s) | vs Steffen-Perfect |
-|------|-------------------|------------------------|---------|--------------------|
-| 1    | steffen_perfect   | 371.0                  | 3.2     | 1.00×              |
-| 2    | steffen_modified  | 378.9                  | 5.2     | 1.02×              |
-| 3    | wilma             | 402.2                  | 9.6     | 1.08×              |
-| 4    | back_to_front     | 443.0                  | 12.3    | 1.19×              |
-| 5    | random            | 455.9                  | 13.0    | 1.23×              |
-| 6    | front_to_back     | 615.0                  | 18.5    | 1.66×              |
+| Method           | Mean (s) | vs fastest |
+|------------------|----------|------------|
+| steffen_perfect  | 371.0    | 1.00×      |
+| steffen_modified | 378.9    | 1.02×      |
+| wilma            | 402.2    | 1.08×      |
+| back_to_front    | 443.0    | 1.19×      |
+| random           | 455.9    | 1.23×      |
+| front_to_back    | 615.0    | 1.66×      |
 
 This reproduces Steffen's ranking: **Steffen-Perfect is fastest**, **Back-to-Front is no better
 than Random** (his central counter-intuitive result), and **Front-to-Back is worst**. JuPedSim's
@@ -80,14 +80,16 @@ Under a realistic mix, **Steffen-Modified overtakes Steffen-Perfect** as the fas
 Steffen-Perfect is the *most* heterogeneity-sensitive optimized method (+8.8% vs +3.4%). Its tightly
 choreographed spacing depends on uniform passengers; coarser grouping has slack to absorb slow ones.
 
-| Rank | Method | Mean (s) | vs homogeneous |
-|------|--------|----------|----------------|
-| 1 | steffen_modified | 391.9 | +3.4% |
-| 2 | steffen_perfect | 403.6 | +8.8% |
-| 3 | wilma | 449.6 | +11.8% |
-| 4 | back_to_front | 490.8 | +10.8% |
-| 5 | random | 511.3 | +12.2% |
-| 6 | front_to_back | 688.6 | +12.0% |
+Mean boarding time under the **realistic passenger mix**, 20 seeds (Δ vs homogeneous):
+
+| Method           | Mean (s) | Δ vs homogeneous |
+|------------------|----------|------------------|
+| steffen_perfect  | 403.6    | +8.8%            |
+| steffen_modified | 391.9    | +3.4%            |
+| wilma            | 449.6    | +11.8%           |
+| back_to_front    | 490.8    | +10.8%           |
+| random           | 511.3    | +12.2%           |
+| front_to_back    | 688.6    | +12.0%           |
 
 ![Boarding time under a realistic passenger mix](docs/study-output/boarding_times_mix.png)
 
@@ -114,6 +116,17 @@ group-immune** (it already boards benches together) and **overtakes Steffen-Perf
 Across both realism axes (heterogeneous passengers *and* groups), the theoretical optimum is the
 fragile one and the practical variant survives — a simulated account of why airlines don't use the
 "perfect" method.
+
+Mean boarding time at **80% travel groups**, 20 seeds (Δ vs homogeneous):
+
+| Method           | Mean (s) | Δ vs homogeneous |
+|------------------|----------|------------------|
+| steffen_perfect  | 388.8    | +4.8%            |
+| steffen_modified | 378.9    | +0.0%            |
+| wilma            | 410.4    | +2.0%            |
+| back_to_front    | 421.0    | −5.0%            |
+| random           | 427.9    | −6.1%            |
+| front_to_back    | 553.7    | −10.0%           |
 
 ![Window-first group cohesion](docs/study-output/group_erosion.png)
 
@@ -142,15 +155,17 @@ value at `Rc = 0`** (exactly, since the order becomes method-independent). **Ran
 Physica A 658, 130298, Fig 16** (a multi-aisle blended-wing-body CA model) on our single-aisle continuous
 model — the value of a clever order is entirely contingent on passengers following it.
 
-Mean boarding time (s), 20 paired seeds:
+Mean boarding time at **0% compliance** (fully random), 20 seeds — every method lands on the same
+458 s (Δ vs homogeneous; full `Rc` sweep in [`docs/results-compliance.md`](docs/results-compliance.md)):
 
-| Rc | steffen_perfect | steffen_modified | wilma | back_to_front | random | front_to_back |
-|------|-----------------|------------------|-------|---------------|--------|---------------|
-| 1.00 | **371.0** | 378.9 | 402.2 | 443.0 | 455.9 | **615.0** |
-| 0.75 | 405.4 | 408.7 | 423.3 | 433.4 | 457.8 | 556.9 |
-| 0.50 | 425.2 | 425.0 | 431.0 | 436.1 | 456.0 | 501.7 |
-| 0.25 | 443.9 | 446.8 | 445.7 | 443.3 | 459.5 | 470.0 |
-| 0.00 | 458.0 | 458.0 | 458.0 | 458.0 | 458.0 | 458.0 |
+| Method           | Mean (s) | Δ vs homogeneous |
+|------------------|----------|------------------|
+| steffen_perfect  | 458.0    | +23.5%           |
+| steffen_modified | 458.0    | +20.9%           |
+| wilma            | 458.0    | +13.9%           |
+| back_to_front    | 458.0    | +3.4%            |
+| random           | 458.0    | +0.5%            |
+| front_to_back    | 458.0    | −25.5%           |
 
 ![Boarding time vs compliance rate](docs/study-output/compliance_erosion.png)
 
