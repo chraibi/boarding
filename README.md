@@ -154,6 +154,15 @@ Mean boarding time (s), 20 paired seeds:
 
 ![Boarding time vs compliance rate](docs/study-output/compliance_erosion.png)
 
+The same method (`steffen_perfect`) at 100 % vs 50 % compliance — **red dots are the non-compliant
+passengers** boarding out of their assigned slot. Both panels share a clock; the 50 % panel finishes
+visibly later (≈425 s vs ≈370 s):
+
+![Compliance comparison video](docs/study-output/comparison_compliance.gif)
+
+Full-quality MP4:
+[`docs/study-output/comparison_compliance.mp4`](docs/study-output/comparison_compliance.mp4)
+(`python -m boarding.visualize --compliance --method steffen_perfect --compliance-rates 1.0 0.5 --seed 1 --rows 30 --out docs/study-output/comparison_compliance.mp4`).
 Full discussion in [`docs/results-compliance.md`](docs/results-compliance.md); design in
 [`docs/compliance-design.md`](docs/compliance-design.md).
 

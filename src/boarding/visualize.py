@@ -19,6 +19,7 @@ _FILLED = "#4fd1c5"  # seated passenger (uniform case)
 _AISLE = "#f6c453"   # passenger in the aisle (uniform case)
 
 _SOLO = "#9aa0b5"    # background colour: solo passengers / the common "standard" profile
+_NONCOMPLIANT = "#e15759"  # passenger boarding out of their assigned slot (compliance video)
 _GROUP_PALETTE = ["#e15759", "#4e79a7", "#59a14f", "#f28e2b", "#b07aa1"]  # rotated per group
 _PROFILE_COLORS = {
     "standard": _SOLO,
@@ -98,37 +99,31 @@ def _cabin_extent(cfg: BoardingConfig):
     return seat_xy, (x0, x1), (min(ys) - pad, max(ys) + pad)
 
 
-def build_comparison_video(
-    methods,
-    seed: int,
-    cfg: BoardingConfig,
-    out_path: Path,
-    fps: int = 20,
-    sample_every_s: float = 1.5,
-    scenario: str = "",
-) -> Path:
+def _render_panels(panel_caps, cfg, out_path, fps, suptitle, caption, legend_items):
+    """Render one stacked animated panel per (label, samples, t_total) entry to mp4.
+
+    All panels share the cabin geometry from ``cfg``. Each title shows the panel label,
+    elapsed time, seated count, and finish time."""
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib import animation
+    from matplotlib.lines import Line2D
 
-    color_of, legend_items, caption = _color_map(cfg, seed)
-    captures = {m: capture(m, seed, cfg, sample_every_s, color_of) for m in methods}
-    n_frames = max(len(s) for s, _ in captures.values())
     total = cfg.total_passengers
+    n_frames = max(len(samples) for _, samples, _ in panel_caps)
     seat_xy, xlim, ylim = _cabin_extent(cfg)
     seat_x = [p[0] for p in seat_xy]
     seat_y = [p[1] for p in seat_xy]
+    n = len(panel_caps)
 
-    fig, axes = plt.subplots(
-        len(methods), 1, figsize=(15, 1.9 * len(methods) + 1), facecolor="#0b0d17"
-    )
-    if len(methods) == 1:
+    fig, axes = plt.subplots(n, 1, figsize=(15, 1.9 * n + 1), facecolor="#0b0d17")
+    if n == 1:
         axes = [axes]
 
-    artists = {}
-    for ax, method in zip(axes, methods, strict=True):
+    artists = []
+    for ax in axes:
         ax.set_facecolor("#0b0d17")
         ax.scatter(seat_x, seat_y, s=14, marker="s",
                    facecolors="none", edgecolors=_EMPTY, linewidths=0.6)
@@ -144,17 +139,11 @@ def build_comparison_video(
         )
         for spine in ax.spines.values():
             spine.set_color("#2a2f45")
-        artists[method] = (filled, aisle, title)
+        artists.append((filled, aisle, title))
 
-    suptitle = "Airplane boarding — method comparison"
-    if scenario:
-        suptitle += f"  ·  {scenario}"
     fig.suptitle(suptitle, color="white", fontsize=14, fontweight="bold")
     bottom = 0.05 if (legend_items or caption) else 0.0
     fig.tight_layout(rect=(0, bottom, 1, 0.96))
-
-    # horizontal divider line between each pair of method panels
-    from matplotlib.lines import Line2D
 
     for top_ax, bot_ax in zip(axes[:-1], axes[1:], strict=True):
         y = (top_ax.get_position().y0 + bot_ax.get_position().y1) / 2.0
@@ -181,11 +170,10 @@ def build_comparison_video(
 
     def frame(i):
         updated = []
-        for method in methods:
-            samples, t_total = captures[method]
-            s = samples[min(i, len(samples) - 1)]  # finished panels hold last frame
-            t, aisle_pts, filled_pts = s
-            filled_a, aisle_a, title = artists[method]
+        for (label, samples, t_total), (filled_a, aisle_a, title) in zip(
+            panel_caps, artists, strict=True
+        ):
+            t, aisle_pts, filled_pts = samples[min(i, len(samples) - 1)]
             fxy, fc = _split(filled_pts)
             axy, ac = _split(aisle_pts)
             filled_a.set_offsets(fxy)
@@ -195,7 +183,7 @@ def build_comparison_video(
             if ac:
                 aisle_a.set_facecolor(ac)
             title.set_text(
-                f"{method}   t={t:5.0f}s   seated {len(filled_pts):>3}/{total}"
+                f"{label}   t={t:5.0f}s   seated {len(filled_pts):>3}/{total}"
                 f"   (finishes {t_total:.0f}s)"
             )
             updated += [filled_a, aisle_a, title]
@@ -206,6 +194,59 @@ def build_comparison_video(
     anim.save(out_path, writer=animation.FFMpegWriter(fps=fps, bitrate=2400))
     plt.close(fig)
     return out_path
+
+
+def build_comparison_video(
+    methods,
+    seed: int,
+    cfg: BoardingConfig,
+    out_path: Path,
+    fps: int = 20,
+    sample_every_s: float = 1.5,
+    scenario: str = "",
+) -> Path:
+    """One panel per method, all under the same cfg (homogeneous / mix / groups)."""
+    color_of, legend_items, caption = _color_map(cfg, seed)
+    panel_caps = [
+        (m, *capture(m, seed, cfg, sample_every_s, color_of)) for m in methods
+    ]
+    suptitle = "Airplane boarding — method comparison"
+    if scenario:
+        suptitle += f"  ·  {scenario}"
+    return _render_panels(panel_caps, cfg, out_path, fps, suptitle, caption, legend_items)
+
+
+def build_compliance_video(
+    method: str,
+    seed: int,
+    rates,
+    cfg: BoardingConfig,
+    out_path: Path,
+    fps: int = 20,
+    sample_every_s: float = 1.5,
+) -> Path:
+    """One panel per compliance rate, all for the same method. Non-compliant passengers
+    (those boarding out of their assigned slot) are highlighted red; compliant ones grey."""
+    from dataclasses import replace
+
+    from .compliance import noncompliant_seats
+    from .methods import all_seats
+
+    seats = all_seats(cfg)
+
+    def _color_for(noncompliant):
+        return lambda seat: _NONCOMPLIANT if seat in noncompliant else _SOLO
+
+    panel_caps = []
+    for rate in rates:
+        cfg_r = replace(cfg, compliance_rate=rate)
+        color_of = _color_for(noncompliant_seats(seats, rate, seed))
+        samples, t_total = capture(method, seed, cfg_r, sample_every_s, color_of)
+        panel_caps.append((f"{method} · {round(rate * 100)}% compliance", samples, t_total))
+
+    suptitle = "Airplane boarding — compliance comparison"
+    caption = "red = boarding out of assigned slot (non-compliant)"
+    return _render_panels(panel_caps, cfg, out_path, fps, suptitle, caption, None)
 
 
 def main(argv=None):
@@ -225,7 +266,25 @@ def main(argv=None):
         "--group-fraction", type=float, default=0.0,
         help="fraction of passengers travelling in cohesive groups",
     )
+    p.add_argument(
+        "--compliance", action="store_true",
+        help="build a compliance video: one method, one panel per --compliance-rates value",
+    )
+    p.add_argument("--method", default="steffen_perfect", choices=list(METHODS),
+                   help="method held fixed in --compliance mode")
+    p.add_argument("--compliance-rates", nargs="+", type=float, default=[1.0, 0.5],
+                   help="compliance rates to panel in --compliance mode")
     args = p.parse_args(argv)
+
+    if args.compliance:
+        cfg = BoardingConfig(rows=args.rows)
+        out = build_compliance_video(
+            args.method, args.seed, args.compliance_rates, cfg,
+            args.out, args.fps, args.sample_every_s,
+        )
+        print(f"wrote {out}")
+        return
+
     cfg = BoardingConfig(
         rows=args.rows,
         profile_mix=DEFAULT_MIX if args.mix else None,
