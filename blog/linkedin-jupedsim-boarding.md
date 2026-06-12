@@ -36,7 +36,7 @@ A very recent paper — **Dong, Yanagisawa & Nishinari (2025), *Physica A***, on
 
 The result matches their paper: as compliance drops, the optimised methods lose their advantage and move toward random boarding, while random itself barely changes. At zero compliance every method gives the same time, because there is no longer any order to follow.
 
-**[Insert: `docs/study-output/compliance_erosion.png`]**
+**[Insert: `docs/study-output/compliance_erosion.png`]** — mean boarding time as compliance falls from 100% (left) to 0% (right), one line per method. As fewer passengers board in their assigned slot, the optimised methods move toward random boarding; Random stays roughly flat and Front-to-Back improves. At zero compliance all methods coincide.
 
 Two completely different models — their discrete cellular automaton on a wide multi-aisle aircraft, our continuous pedestrian simulation on a narrow-body — agree on the trend.
 
