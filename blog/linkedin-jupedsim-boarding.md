@@ -56,7 +56,7 @@ Steffen showed the ranking in 2008 and confirmed it experimentally in 2012; Dong
 
 Everything here — model, experiments, figures, and videos — is on GitHub, and each result regenerates with one command:
 
-**Code & data:** https://github.com/chraibi/boarding
+**Code, high-quality videos & data:** https://github.com/chraibi/boarding
 **JuPedSim:** https://www.jupedsim.org/
 **WebJuPedSim:** https://app.jupedsim.org
 
