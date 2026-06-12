@@ -1,6 +1,10 @@
 # Why don't airlines board planes the optimal way?
 
-*A LinkedIn article — draft. Suggested cover image: `docs/study-output/comparison.gif`.*
+![cover](figures/cover.png)
+
+*Cover: the same boarding method at 100% vs 50% compliance. With half the passengers out of their
+assigned slot (red), boarding finishes later. For a feed post, `docs/study-output/comparison_compliance.mp4`
+plays this as a short video.*
 
 ---
 
