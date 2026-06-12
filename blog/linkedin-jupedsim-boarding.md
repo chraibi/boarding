@@ -22,7 +22,7 @@ We modelled a single-aisle 180-seat cabin and ran six boarding strategies. Each 
 
 The ranking comes out as in the literature: Steffen fastest, back-to-front barely better than random, front-to-back worst.
 
-**[Insert: `docs/study-output/boarding_times.png`]**
+**[Insert: `docs/study-output/boarding_times.png`]** — boarding time for each method, uniform passengers, 180-seat cabin, 20 runs per method. Each box shows the spread across runs. Steffen-Perfect is fastest and Front-to-Back slowest; Back-to-Front is close to Random.
 
 This reproduces established results. The next question is the one that matters in practice.
 
