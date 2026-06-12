@@ -50,13 +50,14 @@ In each case, Steffen's "perfect" method is the most fragile. It is the most sen
 
 The practical takeaway is that the benefit of an optimised boarding order depends almost entirely on passengers following it.
 
-## What this is (and isn't)
+## Reproduction, not new science
 
-This is not new science. Steffen showed the ranking in 2008 and confirmed it experimentally in 2012; Dong et al. did the robustness analysis in 2025. What we built is a reproduction: it shows that @JuPedSim can model the problem, that the results hold across different simulation engines, and that the full pipeline is open and re-runnable.
+Steffen showed the ranking in 2008 and confirmed it experimentally in 2012; Dong et al. did the robustness analysis in 2025. What we built is a reproduction: it shows that @JuPedSim can model the problem, that the results hold across different simulation engines, and that the full pipeline is open and re-runnable.
 
 Everything here — model, experiments, figures, and videos — is on GitHub, and each result regenerates with one command:
 
 **Code & data:** https://github.com/chraibi/boarding
 **JuPedSim:** https://www.jupedsim.org/
+**WebJuPedSim:** https://app.jupedsim.org
 
 *#PedestrianDynamics #JuPedSim #Simulation #OperationsResearch #ReproducibleResearch #AirplaneBoarding*
