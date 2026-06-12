@@ -142,6 +142,16 @@ value at `Rc = 0`** (exactly, since the order becomes method-independent). **Ran
 Physica A 658, 130298, Fig 16** (a multi-aisle blended-wing-body CA model) on our single-aisle continuous
 model — the value of a clever order is entirely contingent on passengers following it.
 
+Mean boarding time (s), 20 paired seeds:
+
+| Rc | steffen_perfect | steffen_modified | wilma | back_to_front | random | front_to_back |
+|------|-----------------|------------------|-------|---------------|--------|---------------|
+| 1.00 | **371.0** | 378.9 | 402.2 | 443.0 | 455.9 | **615.0** |
+| 0.75 | 405.4 | 408.7 | 423.3 | 433.4 | 457.8 | 556.9 |
+| 0.50 | 425.2 | 425.0 | 431.0 | 436.1 | 456.0 | 501.7 |
+| 0.25 | 443.9 | 446.8 | 445.7 | 443.3 | 459.5 | 470.0 |
+| 0.00 | 458.0 | 458.0 | 458.0 | 458.0 | 458.0 | 458.0 |
+
 ![Boarding time vs compliance rate](docs/study-output/compliance_erosion.png)
 
 Full discussion in [`docs/results-compliance.md`](docs/results-compliance.md); design in
